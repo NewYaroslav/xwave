@@ -38,8 +38,6 @@ extern "C"
 #define XWAVE_ERROR 0x00
 #define XWAVE_SAVE_FILE_ONLINE 0x01
 
-//struct _xwave_wave_file;
-//typedef struct _xwave_wave_file xwave_wave_file;
 typedef struct {
     unsigned long sample_rate;                              /**< Частота дискретизации. 8000 Гц, 44100 Гц и т.д. */
     unsigned long byte_rate;                                /**< Количество байт, переданных за секунду воспроизведения. */
@@ -90,14 +88,59 @@ void xwave_write_sample_wave_file(xwave_wave_file* wave_file, void* data);
  */
 void xwave_write_data_block_wave_file(xwave_wave_file* wave_file, void* data, unsigned long len);
 
+/** \brief Закрыть wav файл
+ * \warning Данную функцию необходимо вызывать обязательно в конце записи
+ * \param wave_file структура файла wav
+ *
+ */
 void xwave_close_wave_file(xwave_wave_file* wave_file);
 
+/** \brief Сгенерировать меандр и записать в массив
+ *
+ * \param data данные для сохранения
+ * \param sample_rate Частота дискретизации
+ * \param bits_per_sample Количество бит в сэмпле
+ * \param period период меандра
+ * \param amplitude амплитуда сигнала (от 0 до 1.0)
+ * \param длина массива data
+ *
+ */
 void xwave_get_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double period, double amplitude, unsigned long len);
 
+/** \brief Сгенерировать паузу
+ *
+ * \param data данные для сохранения
+ * \param sample_rate Частота дискретизации
+ * \param bits_per_sample Количество бит в сэмпле
+ * \param длина массива data
+ *
+ */
 void xwave_get_pause_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, unsigned long len);
 
+/** \brief Сгенерировать несколько меандров одновременно и записать в массив
+ *
+ * \param data данные для сохранения
+ * \param sample_rate Частота дискретизации
+ * \param bits_per_sample Количество бит в сэмпле
+ * \param period массив периодов меандра
+ * \param amplitude массив амплитуд сигнала (от 0 до 1.0)
+ * \param num_impulses количество сигналов в массиве (размер массива period или amplitude)
+ * \param длина массива data
+ *
+ */
 void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
 
+/** \brief Сгенерировать несколько затухающих меандров и записать в массив
+ *
+ * \param data данные для сохранения
+ * \param sample_rate Частота дискретизации
+ * \param bits_per_sample Количество бит в сэмпле
+ * \param period массив периодов меандра
+ * \param amplitude массив амплитуд сигнала (от 0 до 1.0)
+ * \param num_impulses количество сигналов в массиве (размер массива period или amplitude)
+ * \param длина массива data
+ *
+ */
 void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
 
 #ifdef __cplusplus
