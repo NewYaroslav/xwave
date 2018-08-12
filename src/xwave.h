@@ -1,6 +1,11 @@
 #ifndef XWAVE_H_INCLUDED
 #define XWAVE_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 //для работы с файлами
 #include <stdio.h>
 
@@ -70,5 +75,9 @@ void xwave_get_pause_mono(void* data, unsigned long sample_rate, unsigned short 
 void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
 
 void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // XWAVE_H_INCLUDED
