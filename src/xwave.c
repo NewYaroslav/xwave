@@ -101,8 +101,8 @@ void xwave_close_wave_file(xwave_wave_file* wave_file) {
 void xwave_get_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double period, double amplitude, unsigned long len) {
     unsigned long i;
     unsigned long t_max = period * (double)sample_rate;
-    unsigned long t_div2 = (unsigned long)((period * (double)sample_rate) / 2.0d);
-    if(amplitude > 1.0) amplitude = 1.0d;
+    unsigned long t_div2 = (unsigned long)((period * (double)sample_rate) / 2.0);
+    if(amplitude > 1.0) amplitude = 1.0;
     switch(bits_per_sample) {
         case 8:
             for(i = 0; i < len; ++i) {
@@ -140,7 +140,7 @@ void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, uns
         double mixer = 0.0;
         for(int n = 0; n < num_impulses; ++n) {
             unsigned long t_max = period[n] * sample_rate;
-            unsigned long t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0d);
+            unsigned long t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0);
             unsigned long pos = i % t_max;
             if(pos >= t_max) {
                 mixer += amplitude[n];
@@ -180,7 +180,7 @@ void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_ra
         double mixer = 0.0;
         for(int n = 0; n < num_impulses; ++n) {
             unsigned long t_max = period[n] * sample_rate;
-            unsigned long t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0d);
+            unsigned long t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0);
             unsigned long pos = i % t_max;
             if(pos >= t_max) {
                 mixer += amplitude[n];
@@ -211,7 +211,7 @@ void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_ra
             break;
         };
         attenuation -=  attenuation_step;
-        if(attenuation < 0.0d) attenuation = 0.0d;
+        if(attenuation < 0.0) attenuation = 0.0;
     }
 }
 

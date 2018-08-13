@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "xwave.h"
-
+#define  data_block_len  32000
 int main() {
     printf("Hello world!\n");
     const int bits_per_sample = 16; // Количество бит в сэмпле. Так называемая “глубина” или точность звучания.
@@ -16,7 +16,7 @@ int main() {
     xwave_create_wave_file(&example);
     printf("sample_rate %d\nbits_per_sample: %d\nblock_align: %d\nbyte_rate: %d\n", example.sample_rate, example.bits_per_sample, example.block_align, example.byte_rate);
     // создадим тестовую запись
-    const int data_block_len = 32000;
+    
     short data_block[data_block_len];
 
     // набор амплитуд и периодов
