@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+project(XWaveApp)
+add_subdirectory(src)
+add_executable(test_xwave_c program/test_xwave_c/main.c)
+target_link_libraries(test_xwave_c XWave)
+target_include_directories(test_xwave_c PRIVATE src)
