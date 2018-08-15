@@ -33,6 +33,7 @@ extern "C"
 //для работы с файлами
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 // Makes a 4-byte "packed ID" int out of 4 characters
 #define MAKEID(d,c,b,a)	(((int)(a)<<24)|((int)(b)<<16)|((int)(c)<<8)|((int)(d)))
 #define RIFF_ID			MAKEID('R','I','F','F')
@@ -146,9 +147,9 @@ extern "C"
     * \param amplitude массив амплитуд сигнала (от 0 до 1.0)
     * \param num_impulses количество сигналов в массиве (размер массива period или amplitude)
     * \param длина массива data
-    *
+    * \param bDamped - затухание меандра
     */
-   void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
+   void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len, bool bDamped);
 
    /** \brief Сгенерировать несколько затухающих меандров и записать в массив
     *
@@ -161,7 +162,7 @@ extern "C"
     * \param длина массива data
     *
     */
-   void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
+  // void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len);
 
 #ifdef __cplusplus
 }
