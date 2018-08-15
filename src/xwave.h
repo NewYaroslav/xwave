@@ -32,25 +32,44 @@ extern "C"
 
 //для работы с файлами
 #include <stdio.h>
+#include <stdint.h>
+// Makes a 4-byte "packed ID" int out of 4 characters
+#define MAKEID(d,c,b,a)	(((int)(a)<<24)|((int)(b)<<16)|((int)(c)<<8)|((int)(d)))
+#define RIFF_ID			MAKEID('R','I','F','F')
+#define RIFF_WAVE			MAKEID('W','A','V','E')
+#define WAVE_FMT			MAKEID('f','m','t',' ')
+#define WAVE_DATA			MAKEID('d','a','t','a')
 
 #define XWAVE_MAX_PATH 260
 #define XWAVE_OK 0x01
 #define XWAVE_ERROR 0x00
 #define XWAVE_SAVE_FILE_ONLINE 0x01
+#define WAVE_FORMAT_PCM 0x0001
+#define BITS_IN_BYTE 8
+#define XWaveChunkSize (sizeof(XWaveHeader_t) - (offsetof(XWaveHeader_t, chunkSize) + sizeof(((XWaveHeader_t*)(NULL))->chunkSize)))
+
+   typedef struct XWaveHeader_s
+   {
+      uint32_t	chunkId;       /**< Содержит символы “RIFF” в ASCII кодировке (0x52494646 в big-endian представлении). Является началом RIFF-цепочки.*/
+      uint32_t	chunkSize;     /**< Это оставшийся размер цепочки, начиная с этой позиции. Иначе говоря, это размер файла – 8, то есть, исключены поля chunkId и chunkSize.*/
+      uint32_t	format;        /**< Содержит символы “WAVE” (0x57415645 в big-endian представлении)*/
+      uint32_t	subchunk1Id;   /**< Содержит символы “fmt “ (0x666d7420 в big-endian представлении)*/
+      uint32_t	subchunk1Size; /**< 16 для формата PCM. Это оставшийся размер подцепочки, начиная с этой позиции.*/
+      uint16_t	audioFormat;   /**< Аудио формат, полный список можно получить здесь. Для PCM = 1 (то есть, Линейное квантование). Значения, отличающиеся от 1, обозначают некоторый формат сжатия.*/
+      uint16_t	numChannels;   /**< Количество каналов. Моно = 1, Стерео = 2 и т.д.*/
+      uint32_t	sampleRate;    /**< Частота дискретизации. 8000 Гц, 44100 Гц и т.д.*/
+      uint32_t	byteRate;      /**< Количество байт, переданных за секунду воспроизведения.*/
+      uint16_t	blockAlign;    /**< Количество байт для одного сэмпла, включая все каналы.*/
+      uint16_t	bitsPerSample; /**< Количество бит в сэмпле. Так называемая “глубина” или точность звучания. 8 бит, 16 бит и т.д.*/
+      uint32_t	subchunk2Id;   /**< Содержит символы “data” (0x64617461 в big-endian представлении)*/
+      uint32_t	subchunk2Size; /**< Количество байт в области данных.*/
+   }XWaveHeader_t;
 
    typedef struct
    {
-      unsigned long  sample_rate;               /**< Частота дискретизации. 8000 Гц, 44100 Гц и т.д. */
-      unsigned long  byte_rate;                 /**< Количество байт, переданных за секунду воспроизведения. */
-      unsigned short bits_per_sample;           /**< Количество бит в сэмпле. Так называемая “глубина” или точность звучания. 8 бит, 16 бит и т.д. */
-      unsigned short num_channels;              /**< Количество каналов. Моно = 1, Стерео = 2 и т.д. */
-      FILE*          fp_save;                   /**<  */
-      unsigned short block_align;               /**< Количество байт для одного сэмпла, включая все каналы */
-      unsigned long  subchunk2_size;            /**< Количество байт в области данных. */
-      unsigned long  chunk_size;                /**< Это оставшийся размер цепочки, начиная с этой позиции. Иначе говоря, это размер файла – 8, то есть, исключены поля chunkId и chunkSize. */
-      unsigned char  len_data_type;             /**< длина тиа данных */
-      char           file_name[XWAVE_MAX_PATH]; /**< Имя файла */
-      char*          data;
+      char          file_name[XWAVE_MAX_PATH]; /**< Имя файла */
+      FILE*         pFile;                     /**<  */
+      XWaveHeader_t WaveHeader;
    } xwave_wave_file;
 
    /** \brief Инициализация структуры wav-файла
@@ -62,7 +81,7 @@ extern "C"
     * \param num_channels Количество каналов
     *
     */
-   void xwave_init_wave_file(xwave_wave_file* wave_file, const char* file_name, unsigned long sample_rate, unsigned short bits_per_sample, unsigned short num_channels);
+   int xwave_init_wave_file(xwave_wave_file* wave_file, const char* file_name, unsigned long sample_rate, unsigned short bits_per_sample, unsigned short num_channels);
 
    /** \brief Создать wav файл для онлайн записи
     *
@@ -70,7 +89,7 @@ extern "C"
     * \return вернет XWAVE_OK если удалось создать файл
     *
     */
-   int xwave_create_wave_file(xwave_wave_file* wave_file);
+   //int xwave_create_wave_file(xwave_wave_file* wave_file);
 
    /** \brief Записать сэмпл в wav файл
     *
