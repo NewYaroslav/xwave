@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
+add_library(XWave STATIC xwave.c xwave.h)
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
