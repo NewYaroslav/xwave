@@ -103,23 +103,22 @@ void xwave_get_impulses_mono(void* data, unsigned long sample_rate, unsigned sho
    };
 }
 
-void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len)
+void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len, bool bDamped)
 {
-   unsigned long i;
    double mixer;
-   unsigned long t_max;
-   unsigned long t_div2;
-   for(i = 0; i < len; ++i)
+   double attenuation = 1.0, attenuation_step = 1.0 / (double)len;
+   unsigned long t_max, t_div2;
+   for(unsigned long i = 0; i < len; ++i)
    {
       mixer = 0.0;
       for(int n = 0; n < num_impulses; ++n)
       {
          t_max = period[n] * sample_rate;
          t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0);
-         mixer += (amplitude[n] * ((i % t_max) >= t_max || (i % t_max) < t_div2) ? 1 : -1);
+         mixer += (amplitude[n] * ((((i % t_max) >= t_max) || ((i % t_max) < t_div2)) ? 1 : -1));
         
       }
-      mixer = (mixer > 1.0) ? 1.0 : (mixer < -1.0) ? -1.0 : mixer;
+      mixer = (bDamped?attenuation:1.0)*((mixer > 1.0) ? 1.0 : (mixer < -1.0) ? -1.0 : mixer);
       switch(bits_per_sample)
       {
          case 8:
@@ -129,35 +128,7 @@ void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, uns
             ((short*)data)[i] = mixer*((mixer > 0) ? SHRT_MAX : -SHRT_MIN);
             break;
       };
-   }
-}
-
-void xwave_get_multiple_damped_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double* period, double* amplitude, unsigned short num_impulses, unsigned long len)
-{
-   
-   double        mixer, attenuation = 1.0, attenuation_step = 1.0 / (double)len;
-   unsigned long t_max, t_div2;
-   for (unsigned long i = 0; i < len; ++i)
-   {
-      mixer = 0.0;
-      for(int n = 0; n < num_impulses; ++n)
-      {
-         t_max  = period[n] * sample_rate;
-         t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0);
-         mixer += (amplitude[n] * ((((i % t_max) >= t_max) || ((i % t_max) < t_div2)) ? 1 : -1));
-      }
-      mixer = attenuation*((mixer > 1.0) ? 1.0 : (mixer < -1.0) ? -1.0 : mixer);
-
-      switch(bits_per_sample)
-      {
-         case 8:
-            ((unsigned char*)data)[i] = (mixer > 0) ? ((UCHAR_MAX - 0x80) * mixer + 0x80) : (0x80 * (1.0 + mixer));
-            break;
-         case 16:
-            ((short*)data)[i] = mixer*((mixer > 0) ? SHRT_MAX : -SHRT_MIN);
-            break;
-      };
-      if ((attenuation -= attenuation_step) < 0.0) attenuation = 0.0;
+      if(bDamped&&((attenuation -= attenuation_step) < 0.0)) attenuation = 0.0;
    }
 }
 

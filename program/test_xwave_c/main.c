@@ -25,7 +25,7 @@ void MakeTestFile(int sample_rate, int bits_per_sample)
    // запишем затухающий сигнал с несколькими генераторами меандра в файл
    for (int i = 1; i < 4; ++i)
    {
-      xwave_get_multiple_damped_impulses_mono(data_block, sample_rate, bits_per_sample, period, ampl, i, data_block_len);
+      xwave_get_multiple_impulses_mono(data_block, sample_rate, bits_per_sample, period, ampl, i, data_block_len,true);
       xwave_write_data_block_wave_file(&example, data_block, data_block_len);
       xwave_get_pause_mono(data_block, sample_rate, bits_per_sample, data_block_len);
       xwave_write_data_block_wave_file(&example, data_block, data_block_len);
@@ -33,7 +33,7 @@ void MakeTestFile(int sample_rate, int bits_per_sample)
    // запишем сигнал с несколькими генераторами меандра в файл
    for (int i = 0; i < 5; ++i)
    {
-      xwave_get_multiple_impulses_mono(data_block, sample_rate, bits_per_sample, period, ampl, 2, data_block_len);
+      xwave_get_multiple_impulses_mono(data_block, sample_rate, bits_per_sample, period, ampl, 2, data_block_len,false);
       xwave_write_data_block_wave_file(&example, data_block, data_block_len);
       xwave_get_pause_mono(data_block, sample_rate, bits_per_sample, data_block_len);
       xwave_write_data_block_wave_file(&example, data_block, data_block_len);
