@@ -5,7 +5,8 @@
 int main() {
     printf("Hello world!\n");
     xwave_wave_file wav_file;
-    xwave_open_wave_file(&wav_file,"test.wav");
+    int res = xwave_open_wave_file(&wav_file,"test.wav");
+    if(res != XWAVE_OK) printf("error!\n");
 
     printf("data len = %d\n", wav_file.WaveHeader.subchunk2Size);
     printf("bits per sample = %d\n", wav_file.WaveHeader.bitsPerSample);

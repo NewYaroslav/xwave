@@ -70,7 +70,7 @@ int xwave_open_wave_file(xwave_wave_file* wave_file, const char* file_name) {
 
     fread(pWaveHeader, sizeof(XWaveHeader_t), 1, wave_file->pFile);
     if(pWaveHeader->chunkId != RIFF_ID) return XWAVE_ERROR;
-    if(pWaveHeader->chunkSize != XWaveChunkSize) return XWAVE_ERROR;
+    //if(pWaveHeader->chunkSize != XWaveChunkSize) return XWAVE_ERROR;
     if(pWaveHeader->format != RIFF_WAVE) return XWAVE_ERROR;
     if(pWaveHeader->subchunk1Id != WAVE_FMT) return XWAVE_ERROR;
     if(pWaveHeader->audioFormat != WAVE_FORMAT_PCM) return XWAVE_ERROR;
