@@ -43,11 +43,11 @@ int xwave_init_wave_file(xwave_wave_file* wave_file, const char* file_name, unsi
    pWaveHeader->bitsPerSample = bits_per_sample;
    pWaveHeader->byteRate = ((pWaveHeader->bitsPerSample / BITS_IN_BYTE) * pWaveHeader->numChannels * pWaveHeader->sampleRate);
    pWaveHeader->blockAlign = ((pWaveHeader->bitsPerSample / BITS_IN_BYTE) *  pWaveHeader->numChannels);
-  
+
    pWaveHeader->subchunk2Id = WAVE_DATA;
    pWaveHeader->subchunk2Size=0;
-  
-   
+
+   wave_file->isOpen = 0;
    wave_file->pFile = fopen(wave_file->file_name, "wb");
 
    if(wave_file->pFile == NULL) return XWAVE_ERROR;
@@ -55,6 +55,52 @@ int xwave_init_wave_file(xwave_wave_file* wave_file, const char* file_name, unsi
    fwrite(pWaveHeader, sizeof(XWaveHeader_t), 1, wave_file->pFile);
 
    return XWAVE_OK;
+}
+
+int xwave_open_wave_file(xwave_wave_file* wave_file, const char* file_name) {
+    char type[4];
+    memset(wave_file->file_name, '\0', XWAVE_MAX_PATH);
+    strcpy(wave_file->file_name, file_name);
+    XWaveHeader_t *pWaveHeader = &wave_file->WaveHeader;
+
+    wave_file->isOpen = 1;
+    wave_file->pFile = fopen(wave_file->file_name, "rb");
+
+    if(wave_file->pFile == NULL) return XWAVE_ERROR;
+
+    fread(pWaveHeader, sizeof(XWaveHeader_t), 1, wave_file->pFile);
+    if(pWaveHeader->chunkId != RIFF_ID) return XWAVE_ERROR;
+    if(pWaveHeader->chunkSize != XWaveChunkSize) return XWAVE_ERROR;
+    if(pWaveHeader->format != RIFF_WAVE) return XWAVE_ERROR;
+    if(pWaveHeader->subchunk1Id != WAVE_FMT) return XWAVE_ERROR;
+    if(pWaveHeader->audioFormat != WAVE_FORMAT_PCM) return XWAVE_ERROR;
+    if(pWaveHeader->subchunk2Id != WAVE_DATA) return XWAVE_ERROR;
+
+
+    return XWAVE_OK;
+}
+
+int xwave_get_num_samples_wave_file(xwave_wave_file* wave_file)
+{
+    return wave_file->WaveHeader.subchunk2Size/wave_file->WaveHeader.blockAlign;
+}
+
+int xwave_get_buffer_size_wave_file(xwave_wave_file* wave_file)
+{
+    return xwave_get_num_samples_wave_file(wave_file) * wave_file->WaveHeader.numChannels;
+}
+
+int xwave_read_wave_file(xwave_wave_file* wave_file, void *buf, int num_samples)
+{
+    size_t calc_value;
+    if(num_samples < 0) {
+        calc_value = wave_file->WaveHeader.subchunk2Size/wave_file->WaveHeader.blockAlign;
+    } else {
+        calc_value = wave_file->WaveHeader.blockAlign * num_samples;
+    }
+    size_t real_value = fread(buf, (wave_file->WaveHeader.bitsPerSample / BITS_IN_BYTE), calc_value, wave_file->pFile);
+    if(real_value == calc_value) return XWAVE_OK;
+    return XWAVE_ERROR;
 }
 
 void xwave_write_sample_wave_file(xwave_wave_file* wave_file, void* data)
@@ -73,11 +119,13 @@ void xwave_write_data_block_wave_file(xwave_wave_file* wave_file, void* data, un
 // данная функция закрывает аудиофайл и записывает количесвто байт данных.
 void xwave_close_wave_file(xwave_wave_file* wave_file)
 {
-   const unsigned long chunk_id_chunk_size_bits = 8;
-   wave_file->WaveHeader.chunkSize = XWaveChunkSize + wave_file->WaveHeader.subchunk2Size;
-   fseek(wave_file->pFile, 0, SEEK_SET);
-   fwrite(&wave_file->WaveHeader, sizeof(XWaveHeader_t), 1, wave_file->pFile);
-   fclose(wave_file->pFile);
+    if(wave_file->isOpen == 0) {
+        const unsigned long chunk_id_chunk_size_bits = 8;
+        wave_file->WaveHeader.chunkSize = XWaveChunkSize + wave_file->WaveHeader.subchunk2Size;
+        fseek(wave_file->pFile, 0, SEEK_SET);
+        fwrite(&wave_file->WaveHeader, sizeof(XWaveHeader_t), 1, wave_file->pFile);
+    }
+    fclose(wave_file->pFile);
 }
 
 void xwave_get_impulses_mono(void* data, unsigned long sample_rate, unsigned short bits_per_sample, double period, double amplitude, unsigned long len)
@@ -116,7 +164,7 @@ void xwave_get_multiple_impulses_mono(void* data, unsigned long sample_rate, uns
          t_max = period[n] * sample_rate;
          t_div2 = (unsigned long)(period[n] * (double)sample_rate / 2.0);
          mixer += (amplitude[n] * ((((i % t_max) >= t_max) || ((i % t_max) < t_div2)) ? 1 : -1));
-        
+
       }
       mixer = (bDamped?attenuation:1.0)*((mixer > 1.0) ? 1.0 : (mixer < -1.0) ? -1.0 : mixer);
       switch(bits_per_sample)

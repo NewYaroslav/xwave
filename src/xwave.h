@@ -69,7 +69,8 @@ extern "C"
    typedef struct
    {
       char          file_name[XWAVE_MAX_PATH]; /**< Имя файла */
-      FILE*         pFile;                     /**<  */
+      FILE*         pFile;                     /**< Сылка на файл */
+      uint8_t       isOpen;
       XWaveHeader_t WaveHeader;
    } xwave_wave_file;
 
@@ -80,9 +81,45 @@ extern "C"
     * \param sample_rate Частота дискретизации
     * \param bits_per_sample Количество бит в сэмпле
     * \param num_channels Количество каналов
+    * \return вернет XWAVE_OK в случае отсутствия ошибок
     *
     */
    int xwave_init_wave_file(xwave_wave_file* wave_file, const char* file_name, unsigned long sample_rate, unsigned short bits_per_sample, unsigned short num_channels);
+
+   /** \brief Открыть wav-файл
+    *
+    * \param wave_file структура файла wav
+    * \param file_name имя файла
+    * \return вернет XWAVE_OK в случае отсутствия ошибок
+    *
+    */
+   int xwave_open_wave_file(xwave_wave_file* wave_file, const char* file_name);
+
+   /** \brief Получить количество сэмплов wav-файла
+    *
+    * \param wave_file структура файла wav
+    * \return вернет количество сэмплов
+    *
+    */
+   int xwave_get_num_samples_wave_file(xwave_wave_file* wave_file);
+
+   /** \brief Получить размер буфера wav-файла
+    *
+    * \param wave_file структура файла wav
+    * \return вернет размер буфера с учетом количества каналов и размером данных
+    *
+    */
+   int xwave_get_buffer_size_wave_file(xwave_wave_file* wave_file);
+
+   /** \brief Прочитать wav-файл в буфер
+    * Данная функция прочитает в буфер указанное количество сэмплов
+    * \param wave_file структура файла wav
+    * \param buf буфер
+    * \param samples сэмплы, указать меньше 0 чтобы прочитать все сэмплы
+    * \return вернет XWAVE_OK в случае отсутствия ошибок
+    *
+    */
+   int xwave_read_wave_file(xwave_wave_file* wave_file, void *buf, int num_samples);
 
    /** \brief Создать wav файл для онлайн записи
     *
